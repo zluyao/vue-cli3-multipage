@@ -1,11 +1,12 @@
 ﻿let path = require('path')
 let glob = require('glob')
 let webpack = require('webpack')
+let CompressionWebpackPlugin = require('compression-webpack-plugin')
 
 function resolve(dir) {
 	return path.join(__dirname, dir);
 }
-// var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin; //文件分析
+var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin; //文件分析
 //配置pages多页面获取当前文件夹下的html和js
 function getEntry(globPath) {
 	let entries = {},
@@ -109,8 +110,14 @@ module.exports = {
 				filename: "css/[name].css"
 			}]);
 		}
+		// if (process.env.npm_config_report) {
+		// 	config
+		// 		.plugin('webpack-bundle-analyzer')
+		// 		.use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin)
+		// }
 	},
 	configureWebpack: config => {
+
 		Object.assign(config, { // 开发生产共同配置
 			resolve: {
 				extensions: ['.js', '.vue', '.less'],
@@ -121,5 +128,28 @@ module.exports = {
 				}
 			},
 		})
+		if (process.env.NODE_ENV === 'production') {
+			// 为生产环境修改配置...
+			config.plugins.push(
+				new CompressionWebpackPlugin({
+					asset: "[path].gz[query]",
+					algorithm: "gzip",
+					test: /\.(js|html|css)$/,
+					threshold: 10240,
+					minRatio: 0.8
+				})
+			);
+		} else {
+			// 为开发环境修改配置...
+			console.log(2222, config.plugins);
+
+		}
+
+		// if (process.env.npm_config_report) {
+		// 	config.plugins.push(
+		// 		new BundleAnalyzerPlugin()
+		// 	);
+		// }
 	}
 }
+
