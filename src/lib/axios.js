@@ -3,28 +3,35 @@
  */
 import axios from 'axios';
 import QS from 'qs';
+import baseUrl from './common'
+
+axios.defaults.baseURL = baseUrl;
 
 // 环境的切换
-if (process.env.NODE_ENV == 'development') {
-  axios.defaults.baseURL = '/api';
-} else if (process.env.NODE_ENV == 'test') {
-  axios.defaults.baseURL = '/test';
-} else if (process.env.NODE_ENV == 'production') {
-  axios.defaults.baseURL = 'http://api.123dailu.com/';
-}
+// if (process.env.NODE_ENV == 'development') {
+//   axios.defaults.baseURL = 'http://test.local.helianhealth.com:9696/manager';
+// } else if (process.env.NODE_ENV == 'test') {
+//   axios.defaults.baseURL = '/test';
+// } else if (process.env.NODE_ENV == 'production') {
+//   axios.defaults.baseURL = 'http://10.20.0.56:8393/';
+// }
 
 // 请求超时时间
 axios.defaults.timeout = 10000;
 
 // post请求头
-axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
-
+// axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+// axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'; //默认
+  
 // 请求拦截器
 axios.interceptors.request.use(
   config => {
+    
     // 每次发送请求之前判断是否存在token，如果存在，则统一在http请求的header都加上token，不用每次请求都手动添加了
     // 即使本地存在token，也有可能token是过期的，所以在响应拦截器中要对返回状态进行判断
-    const token = store.state.token;
+
+    // const token = store.state.token;
+    const token = null;
     token && (config.headers.Authorization = token);
     return config;
   },
@@ -35,6 +42,7 @@ axios.interceptors.request.use(
 // 响应拦截器
 axios.interceptors.response.use(
   response => {
+    console.log('响应拦截1', response);
     if (response.status === 200) {
       return Promise.resolve(response);
     } else {
@@ -43,6 +51,7 @@ axios.interceptors.response.use(
   },
   // 服务器状态码不是200的情况    
   error => {
+    console.log('响应拦截2', error);
     if (error.response.status) {
       switch (error.response.status) {
         // 401: 未登录                
@@ -90,7 +99,15 @@ export function get(url, params) {
  */
 export function post(url, params) {
   return new Promise((resolve, reject) => {
-    axios.post(url, QS.stringify(params))
+    // axios.post(url, QS.stringify(params))
+    //   .then(res => {
+    //     resolve(res.data);
+    //   })
+    //   .catch(err => {
+    //     reject(err.data)
+    //   })
+
+    axios.post(url, params)
       .then(res => {
         resolve(res.data);
       })
